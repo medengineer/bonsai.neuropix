@@ -7,13 +7,18 @@ using System.Threading.Tasks;
 
 namespace NeuropixPXI.Native
 {
-	public struct ElectrodePacket
+	[StructLayout(LayoutKind.Sequential)]
+	unsafe struct ElectrodePacket
 	{
-		public UInt32 timestamp;
-		public UInt16 Status;
-		public UInt16 payloadLength;
+		internal const int PROBE_SUPERFRAMESIZE = 12;
+		internal const int PROBE_CHANNEL_COUNT = 384;
+
+		public fixed UInt32 timestamp[PROBE_SUPERFRAMESIZE];
+		public fixed Int16 apData[PROBE_SUPERFRAMESIZE * PROBE_CHANNEL_COUNT];
+		public fixed Int16 lfpData[PROBE_CHANNEL_COUNT];
+		public fixed UInt16 Status[PROBE_SUPERFRAMESIZE];
 	};
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	public delegate void np_packetcallback(ref ElectrodePacket packet, IntPtr userdata);
+	delegate void np_packetcallback(ref ElectrodePacket packet, IntPtr userdata);
 }
