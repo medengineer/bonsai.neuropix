@@ -20,6 +20,10 @@ namespace Bonsai.NeuropixPXI
                 var apData = new Mat(ElectrodePacket.PROBE_SUPERFRAMESIZE, ElectrodePacket.PROBE_CHANNEL_COUNT, Depth.S16, 1, (IntPtr)packet.apData);
                 ApData = new Mat(ElectrodePacket.PROBE_CHANNEL_COUNT, ElectrodePacket.PROBE_SUPERFRAMESIZE, Depth.S16, 1);
                 CV.Transpose(apData, ApData);
+
+                var lfpData = new Mat(1, ElectrodePacket.PROBE_CHANNEL_COUNT, Depth.S16, 1, (IntPtr)packet.lfpData);
+                LfpData = new Mat(ElectrodePacket.PROBE_CHANNEL_COUNT, 1, Depth.S16, 1);
+                CV.Transpose(lfpData, LfpData);
             }
         }
 
@@ -28,13 +32,19 @@ namespace Bonsai.NeuropixPXI
             unsafe
             {
                 var apData = new Mat(ElectrodePacket.PROBE_SUPERFRAMESIZE, ElectrodePacket.PROBE_CHANNEL_COUNT, Depth.S16, 1, IntPtr.Zero);
+                var lfpData = new Mat(1, ElectrodePacket.PROBE_CHANNEL_COUNT, Depth.S16, 1, IntPtr.Zero);
                 ApData = new Mat(ElectrodePacket.PROBE_CHANNEL_COUNT, ElectrodePacket.PROBE_SUPERFRAMESIZE * packets.Length, Depth.S16, 1);
+                LfpData = new Mat(ElectrodePacket.PROBE_CHANNEL_COUNT, packets.Length, Depth.S16, 1);
+
                 fixed (ElectrodePacket* fpackets = packets)
                 {
                     for (int i = 0; i < packets.Length; i++)
                     {
                         apData.SetData((IntPtr)fpackets[i].apData, Mat.AutoStep);
                         CV.Transpose(apData, ApData.GetSubRect(new Rect(ElectrodePacket.PROBE_SUPERFRAMESIZE * i++, 0, apData.Rows, apData.Cols)));
+
+                        lfpData.SetData((IntPtr)fpackets[i].lfpData, Mat.AutoStep);
+                        CV.Transpose(lfpData, LfpData.GetSubRect(new Rect(ElectrodePacket.PROBE_SUPERFRAMESIZE * i++, 0, lfpData.Rows, lfpData.Cols)));
                     }
                 }
             }

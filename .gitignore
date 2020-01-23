@@ -2,3 +2,5 @@
 .nuget
 .hg
 x64
+Bonsai.Neuropix/bin/
+*/obj
